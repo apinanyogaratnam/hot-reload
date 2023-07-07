@@ -1,7 +1,6 @@
 use std::{collections::HashMap, thread, time::Duration};
 use walkdir::WalkDir;
-use subprocess::{Popen, PopenConfig, ExitStatus};
-use subprocess::popen::Signal;
+use subprocess::{Popen, PopenConfig};
 
 fn main() {
     let mut files = HashMap::new();
@@ -24,7 +23,7 @@ fn main() {
         }
 
         if changed {
-            child.terminate().unwrap();
+            child.kill().unwrap();
             child.wait().unwrap();
             child = start_server();
         }
