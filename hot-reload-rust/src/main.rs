@@ -1,6 +1,8 @@
-use std::{collections::HashMap, process::Command, thread, time::Duration};
+use std::{collections::HashMap, process::{Command, exit, Child}, thread, time::Duration};
 use walkdir::WalkDir;
-use std::process::Child;
+use std::os::unix::process::CommandExt;
+use nix::sys::signal::{kill, Signal};
+use nix::unistd::Pid;
 
 fn main() {
     let mut files = HashMap::new();
@@ -23,8 +25,9 @@ fn main() {
         }
 
         if changed {
-            child.kill().unwrap();
-            child.wait().unwrap();  // Add this line
+            // Send SIGKILL signal to child process
+            kill(Pid::from_raw(child.id() as i32), Signal::SIGKILL).unwrap();
+            child.wait().unwrap();
             child = start_server();
         }
 
@@ -35,6 +38,5 @@ fn main() {
 fn start_server() -> Child {
     Command::new("make")
         .arg("start")
-        .spawn()
-        .expect("Failed to start the server")
+        .exec() // exec replaces the current process with the new one
 }
