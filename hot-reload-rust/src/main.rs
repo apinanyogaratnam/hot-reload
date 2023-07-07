@@ -1,8 +1,6 @@
-use std::{collections::HashMap, path::Path, process::Command, thread, time::Duration};
+use std::{collections::HashMap, process::Command, thread, time::Duration};
 use walkdir::WalkDir;
 use std::process::Child;
-use std::process;
-use std::os::unix::process::CommandExt;
 
 fn main() {
     let mut files = HashMap::new();
@@ -18,7 +16,7 @@ fn main() {
                 let mtime = metadata.modified().unwrap();
                 if files.get(path) != Some(&mtime) {
                     println!("File {:?} has been modified. Reloading...", path);
-                    files.insert(Path::new(path).to_path_buf(), mtime);
+                    files.insert(path.to_path_buf(), mtime);
                     changed = true;
                 }
             }
@@ -26,6 +24,7 @@ fn main() {
 
         if changed {
             child.kill().unwrap();
+            child.wait().unwrap();  // Add this line
             child = start_server();
         }
 
