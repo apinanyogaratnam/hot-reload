@@ -1,6 +1,9 @@
-use std::{collections::HashMap, thread, time::Duration};
+use std::{collections::HashMap, process::Command, thread, time::Duration};
 use walkdir::WalkDir;
-use subprocess::{Popen, PopenConfig};
+use std::process::Child;
+use std::os::unix::prelude::CommandExt;
+use nix::unistd::{Pid, getpid, setpgid};
+use nix::sys::signal::{killpg, Signal};
 
 fn main() {
     let mut files = HashMap::new();
@@ -23,7 +26,9 @@ fn main() {
         }
 
         if changed {
-            child.kill().unwrap();
+            let pid = Pid::from_raw(child.id() as i32);
+            // Send SIGTERM signal to the process group of the child process
+            killpg(pid, Signal::SIGTERM).expect("Failed to kill process group");
             child.wait().unwrap();
             child = start_server();
         }
@@ -32,7 +37,16 @@ fn main() {
     }
 }
 
-fn start_server() -> Popen {
-    Popen::create(&["make", "start"], PopenConfig::default())
-        .expect("Failed to start the server")
+fn start_server() -> Child {
+    let mut command = Command::new("make");
+    command.arg("start");
+    unsafe {
+        command.pre_exec(|| {
+            let pid = getpid();
+            // Create a new process group
+            setpgid(pid, pid).expect("Failed to create a new process group");
+            Ok(())
+        });
+    }
+    command.spawn().expect("Failed to start the server")
 }
