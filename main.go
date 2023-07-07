@@ -82,4 +82,3 @@ func startServer() *exec.Cmd {
 	log.Println("Server started with PID", cmd.Process.Pid)
 	return cmd
 }
-
