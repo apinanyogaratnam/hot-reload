@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 walkdir = "2.3"
 nix = "0.23"
+subprocess = "0.2"

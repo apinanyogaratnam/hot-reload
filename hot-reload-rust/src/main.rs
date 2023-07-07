@@ -1,8 +1,7 @@
-use std::{collections::HashMap, process::{Command, exit, Child}, thread, time::Duration};
+use std::{collections::HashMap, thread, time::Duration};
 use walkdir::WalkDir;
-use std::os::unix::process::CommandExt;
-use nix::sys::signal::{kill, Signal};
-use nix::unistd::Pid;
+use subprocess::{Popen, PopenConfig, ExitStatus};
+use subprocess::popen::Signal;
 
 fn main() {
     let mut files = HashMap::new();
@@ -25,8 +24,7 @@ fn main() {
         }
 
         if changed {
-            // Send SIGKILL signal to child process
-            kill(Pid::from_raw(child.id() as i32), Signal::SIGKILL).unwrap();
+            child.terminate().unwrap();
             child.wait().unwrap();
             child = start_server();
         }
@@ -35,8 +33,7 @@ fn main() {
     }
 }
 
-fn start_server() -> Child {
-    Command::new("make")
-        .arg("start")
-        .exec() // exec replaces the current process with the new one
+fn start_server() -> Popen {
+    Popen::create(&["make", "start"], PopenConfig::default())
+        .expect("Failed to start the server")
 }
