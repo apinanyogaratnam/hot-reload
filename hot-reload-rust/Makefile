@@ -18,6 +18,14 @@ export AR_x86_64_unknown_linux_gnu
 CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER := x86_64-linux-musl-gcc
 export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER
 
+install:
+	# install x86_64-unknown-linux-gnu toolchain
+	brew install messense/macos-cross-toolchains/x86_64-unknown-linux-gnu
+	# install aarch64-unknown-linux-gnu toolchain
+	brew install messense/macos-cross-toolchains/aarch64-unknown-linux-gnu
+	# install x86_64-unknown-linux-musl toolchain
+	brew install messense/macos-cross-toolchains/x86_64-unknown-linux-musl
+
 build:
 	rustup target add x86_64-unknown-linux-gnu
 	cargo build --target x86_64-unknown-linux-gnu --release
@@ -26,4 +34,4 @@ build:
 	cargo build --target aarch64-unknown-linux-gnu --release
 
 	rustup target add x86_64-unknown-linux-musl
-	cargo build --target x86_64-unknown-linux-musl
+	cargo build --target x86_64-unknown-linux-musl --release
